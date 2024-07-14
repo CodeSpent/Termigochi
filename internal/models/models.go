@@ -13,16 +13,15 @@ import (
 )
 
 type Pet struct {
-	Name             string    `json:"name"`
-	Hunger           int       `json:"hunger"`
-	Happiness        int       `json:"happiness"`
-	Health           int       `json:"health"`
-	Food             []Food    `json:"food"`
-	Toys             []Toy     `json:"toys"`
-	CreatedDate      time.Time `json:"created_date"`
-	HatchDate        time.Time `json:"hatch_date"`
-	Hatched          bool      `json:"hatched"`
-	HatchEventPlayed bool      `json:"hatch_event_played"`
+	Name        string    `json:"name"`
+	Hunger      int       `json:"hunger"`
+	Happiness   int       `json:"happiness"`
+	Health      int       `json:"health"`
+	Food        []Food    `json:"food"`
+	Toys        []Toy     `json:"toys"`
+	CreatedDate time.Time `json:"created_date"`
+	HatchDate   time.Time `json:"hatch_date"`
+	Hatched     bool      `json:"hatched"`
 }
 
 func NewPet(name string) *Pet {

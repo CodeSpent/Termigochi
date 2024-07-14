@@ -6,7 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"termigochi/internal/config"
 	"termigochi/internal/logger"
+	"termigochi/internal/models"
+	"time"
 )
 
 func StartDaemon() {
@@ -60,4 +63,25 @@ func StopDaemon() {
 
 	fmt.Println("Termigochi service stopped")
 	logger.ServiceLogger.Println("Termigochi service stopped")
+}
+
+func petBackgroundService() {
+	pet, err := models.LoadPetFromStateFile(config.DefaultPetStateFilePath)
+	if err != nil {
+		logger.ServiceLogger.Printf("Error loading state: %v\n", err)
+		os.Exit(1)
+	}
+
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		prevHunger := pet.Hunger
+		prevHappiness := pet.Happiness
+
+		pet.TickState()
+		pet.SaveState(config.DefaultPetStateFilePath)
+		logger.EventLogger.Printf("Updated Hunger: %d -> %d, Happiness: %d -> %d", prevHunger, pet.Hunger,
+			prevHappiness, pet.Happiness)
+	}
 }

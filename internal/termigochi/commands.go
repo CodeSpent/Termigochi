@@ -2,12 +2,10 @@ package termigochi
 
 import (
 	"fmt"
-	"os"
+	"termigochi/internal/config"
 	"termigochi/internal/logger"
 	"termigochi/internal/models"
 )
-
-const stateFile = "termigochi_state.json"
 
 func FeedPet(pet *models.Pet, foodInput string) {
 	var food models.Food
@@ -22,7 +20,7 @@ func FeedPet(pet *models.Pet, foodInput string) {
 	}
 	pet.Feed(food)
 	fmt.Printf("You feed the Pet a %s!\n", food.Name)
-	SaveState(pet)
+	pet.SaveState(config.DefaultPetStateFilePath)
 	logger.EventLogger.Printf("Fed %s, Hunger: %d\n", food.Name, pet.Hunger)
 }
 
@@ -39,7 +37,7 @@ func PlayWithPet(pet *models.Pet, toyInput string) {
 	}
 	pet.Play(toy)
 	fmt.Printf("You play with the Pet using a %s!\n", toy.Name)
-	SaveState(pet)
+	pet.SaveState(config.DefaultPetStateFilePath)
 	logger.EventLogger.Printf("Played with %s, Happiness: %d\n", toy.Name, pet.Happiness)
 }
 
@@ -50,18 +48,22 @@ func PrintStatus(pet *models.Pet) {
 func ReportState(pet *models.Pet) {
 	hungerColor := GetColor(pet.Hunger)
 	happinessColor := GetColor(pet.Happiness)
+	healthColor := GetColor(pet.Health)
 
 	fmt.Println()
-	fmt.Printf("%sHunger: %d%s\n", hungerColor, pet.Hunger, ResetColor())
-	fmt.Printf("%sHappiness: %d%s\n", happinessColor, pet.Happiness, ResetColor())
+	fmt.Printf("%s", pet.Name)
 	fmt.Println()
-}
+	fmt.Println()
 
-func SaveState(pet *models.Pet) {
-	if err := pet.SaveState(stateFile); err != nil {
-		fmt.Fprintf(os.Stderr, "Error saving state: %v\n", err)
-		logger.ServiceLogger.Printf("Error saving state: %v\n", err)
+	if pet.Hatched {
+		fmt.Printf("%sHealth: %d%s\n", healthColor, pet.Health, ResetColor())
+		fmt.Printf("%sHunger: %d%s\n", hungerColor, pet.Hunger, ResetColor())
+		fmt.Printf("%sHappiness: %d%s\n", happinessColor, pet.Happiness, ResetColor())
+	} else {
+		fmt.Printf("Still incubating.. Check back later.")
 	}
+
+	fmt.Println()
 }
 
 func GetColor(value int) string {

@@ -9,6 +9,7 @@ import (
 const (
 	DefaultConfigPath       = "termigochi-config.json"
 	DefaultPetStateFilePath = "termigochi-pet-state.json"
+	DefaultProcessFilePath  = "./"
 )
 
 type Config struct {
@@ -16,6 +17,7 @@ type Config struct {
 	PlayerName       string `json:"player_name"`
 	PetStateFilePath string `json:"pet_state_file_path"`
 	ConfigPath       string `json:"config_path"`
+	PIDPath          string `json:"pid_path"`
 }
 
 func NewConfig(configPath string) (*Config, error) {
@@ -66,6 +68,7 @@ func (c *Config) SaveConfig() error {
 	if c.ConfigPath == "" {
 		c.ConfigPath = DefaultConfigPath
 		c.PetStateFilePath = DefaultPetStateFilePath
+		c.PIDPath = DefaultProcessFilePath
 	}
 
 	file, err := os.Create(c.ConfigPath)

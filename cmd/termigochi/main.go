@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 	"termigochi/internal/config"
 	"termigochi/internal/logger"
 	"termigochi/internal/models"
@@ -23,8 +26,10 @@ func main() {
 		switch command {
 		case "start":
 			termigochi.StartDaemon()
+			return
 		case "stop":
 			termigochi.StopDaemon()
+			return
 		default:
 			break
 		}
@@ -43,11 +48,25 @@ func main() {
 		termigochi.StartOnboarding(conf)
 	}
 
+	// Verify background service is running
+	// before pet interactions
+	processRunning := termigochi.CheckIfProcessIsRunning()
+
+	if !processRunning {
+		daemonConfirmation := confirm("Would you like to start the service?", 2)
+
+		if daemonConfirmation {
+			termigochi.StartDaemon()
+		} else {
+			os.Exit(0)
+		}
+	}
+
 	// Get or Create active pet
 	pet, err := models.LoadPetFromStateFile(conf.PetStateFilePath)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading state: %v\n", err)
+		fmt.Printf("Error loading state: %v\n\n", err)
 		os.Exit(1)
 	}
 
@@ -75,4 +94,23 @@ func main() {
 		termigochi.ReportState(pet)
 		return
 	}
+}
+
+func confirm(s string, tries int) bool {
+	r := bufio.NewReader(os.Stdin)
+
+	for ; tries > 0; tries-- {
+		fmt.Printf("%s [y/n]: ", s)
+
+		res, err := r.ReadString('\n')
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		if len(res) < 2 {
+			continue
+		}
+		return strings.ToLower(strings.TrimSpace(res))[0] == 'y'
+	}
+	return false
 }
